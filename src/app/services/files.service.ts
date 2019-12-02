@@ -1,0 +1,86 @@
+import { Injectable } from '@angular/core';
+import { environment } from '../../environments/environment';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { File } from '../classes/file';
+
+@Injectable({
+	providedIn: 'root'
+})
+
+export class FilesService {
+
+	private BASE_URL: string = environment.apiUrl;
+	private tokenHeader = new HttpHeaders({'Content-Type':  'application/json', 'Access-Control-Allow-Origin': 'http://localhost:4200'});
+
+	constructor(
+		private http: HttpClient
+	) {}
+
+	/*
+	getAll(): Promise<any> {
+		console.log('in')
+		const url: string = `${this.BASE_URL}` + '/files';
+		return this.http.get(url, {headers: this.tokenHeader}).toPromise();
+	}*/
+	
+	getAll() {
+		return ["c/compare.c", "foo/golang/compare.go", "compare.java", "foo/golang/bluemonday.go", "html/symflower.html", "ts/filetree.component.ts"];
+	}
+
+	get(name) {
+		let pathParts = name.split('/');
+		let filename = pathParts[pathParts.length - 1];
+		let file = this.files[filename];
+		file.data = this.b64DecodeUnicode(file.Data);
+		return file;
+	}
+
+	// There might be UTF-8 in a file, which can cause troubles in encoding
+	// Solution based on https://stackoverflow.com/a/30106551
+	b64EncodeUnicode(str) {
+		// first we use encodeURIComponent to get percent-encoded UTF-8,
+		// then we convert the percent encodings into raw bytes which
+		// can be fed into btoa.
+		return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
+		function toSolidBytes(match, p1) {
+			let codeUnits:any = '0x' + p1;
+			return String.fromCharCode(codeUnits);
+		}));
+	}
+
+	b64DecodeUnicode(str) {
+		// Going backwards: from bytestream, to percent-encoding, to original string.
+		return decodeURIComponent(atob(str).split('').map(function(c) {
+			return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+		}).join(''));
+	}
+
+	files = {
+		"filetree.component.ts": {
+			"Data": "Ly8gSXRlcmF0ZXMgb3ZlciBhIGdpdmVuIHBhdGggYW5kIGJ1aWxkcyBhIG5vZGUgPSBicmFuY2ggb2YgdHJlZQpwYXRoVG9Ob2RlKHBhdGgsIHNvdXJjZU5vZGUpIHsKCWxldCBwYXRoTmFtZXMgPSBwYXRoLnNwbGl0KCcvJyk7CglyZXR1cm4gcGF0aE5hbWVzLnJlZHVjZShmdW5jdGlvbihub2RlLCBuYW1lKSB7CgkJbm9kZS5jaGlsZHJlbiA9IG5vZGUuY2hpbGRyZW4gfHwgW107CgkJbGV0IHRlbXBOb2RlID0gbm9kZS5jaGlsZHJlbi5maW5kKG4gPT4gbi5uYW1lID09PSBuYW1lKTsKCQlpZighdGVtcE5vZGUpIHsKCQkJdGVtcE5vZGUgPSB7bmFtZTogbmFtZX07CgkJCW5vZGUuY2hpbGRyZW4ucHVzaCh0ZW1wTm9kZSk7CgkJfQoJCXJldHVybiB0ZW1wTm9kZTsKCX0sIHNvdXJjZU5vZGUpOwp9CgovLyBJdGVyYXRlIG92ZXIgYWxsIHBhdGhzIGFuZCBidWlsZHMgdHJlZQpnZXRQYXRoVHJlZShwYXRocykgewoJbGV0IHRoYXQgPSB0aGlzOwoJbGV0IG5vZGVzID0gW107CglsZXQgc291cmNlTm9kZSA9IHtjaGlsZHJlbjogbm9kZXN9CglwYXRocy5yZWR1Y2UoZnVuY3Rpb24obm9kZSwgcGF0aCkgewoJCXRoYXQucGF0aFRvTm9kZShwYXRoLCBzb3VyY2VOb2RlKTsKCQlyZXR1cm4gbm9kZTsKCX0sIHNvdXJjZU5vZGUpOwoJcmV0dXJuIG5vZGVzOwp9CgovKiBYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWCAqLwovLyBTb3J0aW5nCi8qIFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYICovCi8vIEV4ZXJjaXNlIGNvbW1lbnQ6Ci8vIEd1ZXNzIGl0J3MgbmVlZGVkIGluIHZhcmlvdXMgY29tcG9uZW50cyBvZiBhcHAKLy8gc28gSSdkIHNldCBpdCB1cCBpbiBhIG1vcmUgZ2VuZXJpYyB3YXkgaW4gYSBzZXJ2aWNlIHRoYXQgY2FuIGJlIGluamVjdGVkCi8vIElFOiBTb3J0IGJ5IGtleSwgY2hlY2sgaWYgaW50ZWdlci9mbG9hdCBldGMKc29ydEJ5TmFtZShBcnJheSwgc29ydGluZ09yZGVyKSB7CglyZXR1cm4gQXJyYXkuc29ydChmdW5jdGlvbihhLCBiKSB7CgkJYSA9IGEubmFtZS50b0xvd2VyQ2FzZSgpOyAKCQliID0gYi5uYW1lLnRvTG93ZXJDYXNlKCk7CgkJbGV0IGRlY2lkZXI7CgkJaWYoYSA8IGIpIHsKCQkJZGVjaWRlciA9IC0xOwoJCX0KCQllbHNlIHsKCQkJZGVjaWRlciA9IDE7CgkJfQoJCWlmIChzb3J0aW5nT3JkZXIgPT0gJ2Rlc2MnKSB7CgkJCWRlY2lkZXIgPSBkZWNpZGVyICogLTE7CgkJfQoJCXJldHVybiBkZWNpZGVyOwoJfSk7Cn0KCnNvcnRUcmVlKHRyZWUsIHNvcnRpbmdPcmRlcikgewoJY29uc3QgdGhhdCA9IHRoaXM7Cgl0aGF0LnNvcnRCeU5hbWUodHJlZSwgc29ydGluZ09yZGVyKTsKCXRyZWUuZm9yRWFjaChmdW5jdGlvbihicmFuY2gpIHsKCQlpZihicmFuY2guY2hpbGRyZW4pIHsKCQkJdGhhdC5zb3J0VHJlZShicmFuY2guY2hpbGRyZW4sIHNvcnRpbmdPcmRlcik7CgkJfQoJfSk7Cn0KCg",
+			"Coverages":[{"startLine": 2, "startColumn": 1, "endLine": 13, "endColumn": 2}, {"startLine": 34, "startColumn": 1, "endLine": 50, "endColumn": 2}]
+		},
+		"symflower.html": {
+			"Data": "PGRpdiBjbGFzcz0ic2ZsLXJvdy1jb250YWluZXItZGFyay1jYXJkIj4KICA8ZGl2IGNsYXNzPSJyb3ciPgogICAgPGRpdiBjbGFzcz0ibWVkaXVtLTEyIGNvbHVtbnMgdGV4dC1jZW50ZXIiPgogICAgICA8aDI+UHJvZHVrdGUgdW5kIERpZW5zdGxlaXN0dW5nZW48L2gyPgogICAgPC9kaXY+CiAgPC9kaXY+CiAgPGRpdiBjbGFzcz0icm93Ij4KICAgIDxkaXYgY2xhc3M9Im1lZGl1bS00IGNvbHVtbnMiPgogICAgICA8ZGl2IGNsYXNzPSJjYXJkIHNmbC1jYXJkIj4KICAgICAgICA8ZGl2IGNsYXNzPSJzZmwtY2FyZC1pbWFnZS1jb250YWluZXIiPgogICAgICAgICAgPGEgaHJlZj0iL2RlL3Byb2R1Y3QvIj48aW1nIGNsYXNzPSJzZmwtY2FyZC1pbWFnZSIgc3JjPSIvYXNzZXRzL2ltZy9mcm9udC1zeW1mbG93ZXIuc3ZnP2E4NTZlOSIgYWx0PSIiIC8+PC9hPgogICAgICAgIDwvZGl2PgogICAgICAgIDxkaXYgY2xhc3M9ImNhcmQtc2VjdGlvbiB0ZXh0LWNlbnRlciI+CiAgICAgICAgICA8aDQ+U3ltZmxvd2VyPC9oND4KICAgICAgICAgIDxwPlN5bWZsb3dlciBhbmFseXNpZXJ0IGJlc3RlaGVuZGUgU29mdHdhcmVzeXN0ZW1lIHZvbGxhdXRvbWF0aXNjaCwgbWl0IGRlbSBaaWVsIGF1dG9tYXRpc2llcnQgVGVzdHMgbWl0IGhvaGVyIFRlc3RhYmRlY2t1bmcgenUgZ2VuZXJpZXJlbi48L3A+CiAgICAgICAgICA8YSBocmVmPSIvZGUvcHJvZHVjdC8iIGNsYXNzPSJzZmwtYnV0dG9uLXR1cnF1b2lzZSI+PHNwYW4+TWVociBlcmZhaHJlbjwvc3Bhbj48L2E+CiAgICAgICAgPC9kaXY+CiAgICAgIDwvZGl2PgogICAgPC9kaXY+CiAgICA8ZGl2IGNsYXNzPSJtZWRpdW0tNCBjb2x1bW5zIj4KICAgICAgPGRpdiBjbGFzcz0iY2FyZCBzZmwtY2FyZCI+CiAgICAgICAgPGRpdiBjbGFzcz0ic2ZsLWNhcmQtaW1hZ2UtY29udGFpbmVyIj4KICAgICAgICAgIDxhIGhyZWY9Ii9kZS90ZXN0aW5nLXNlcnZpY2VzLyI+PGltZyBjbGFzcz0ic2ZsLWNhcmQtaW1hZ2UiIHNyYz0iL2Fzc2V0cy9pbWcvZnJvbnQtdGVzdGluZy1zZXJ2aWNlcy5zdmc/ODBlODdmIiBhbHQ9IiIgLz48L2E+CiAgICAgICAgPC9kaXY+CiAgICAgICAgPGRpdiBjbGFzcz0iY2FyZC1zZWN0aW9uIHRleHQtY2VudGVyIj4KICAgICAgICAgIDxoND5UZXN0aW5nIFNlcnZpY2VzPC9oND4KICAgICAgICAgIDxwPldpciB1bnRlcnN0w7x0emVuIHVuZCBzY2h1bGVuIGluIGFsbGVuIFRlc3RiZXJlaWNoZW4uIEJlaXNwaWVsc3dlaXNlIGhlbGZlbiB3aXIgYmVpIGRlciBFcnN0ZWxsdW5nIGF1dG9tYXRpc2llcnRlciBGcmFtZXdvcmtzLCB1bSBsYW5nZnJpc3RpZyBlZmZpemllbnQgenUgdGVzdGVuLjwvcD4KICAgICAgICAgIDxhIGhyZWY9Ii9kZS90ZXN0aW5nLXNlcnZpY2VzLyIgY2xhc3M9InNmbC1idXR0b24tZ3JlZW4iPjxzcGFuPk1laHIgZXJmYWhyZW48L3NwYW4+PC9hPgogICAgICAgIDwvZGl2PgogICAgICA8L2Rpdj4KICAgIDwvZGl2PgogICAgPGRpdiBjbGFzcz0ibWVkaXVtLTQgY29sdW1ucyI+CiAgICAgIDxkaXYgY2xhc3M9ImNhcmQgc2ZsLWNhcmQiPgogICAgICAgIDxkaXYgY2xhc3M9InNmbC1jYXJkLWltYWdlLWNvbnRhaW5lciI+CiAgICAgICAgICA8YSBocmVmPSIvZGUvZGV2ZWxvcG1lbnQtZXNzZW50aWFscy8iPjxpbWcgY2xhc3M9InNmbC1jYXJkLWltYWdlIiBzcmM9Ii9hc3NldHMvaW1nL2Zyb250LWRldmVsb3BtZW50LWVzc2VudGlhbHMuc3ZnP2JlOTEwNiIgYWx0PSJEZXZlbG9wbWVudCBFc3NlbnRpYWwiIC8+PC9hPgogICAgICAgIDwvZGl2PgogICAgICAgIDxkaXYgY2xhc3M9ImNhcmQtc2VjdGlvbiB0ZXh0LWNlbnRlciI+CiAgICAgICAgICA8aDQ+RGV2ZWxvcG1lbnQgRXNzZW50aWFsczwvaDQ+CiAgICAgICAgICA8cD5XaXIgYmlldGVuIERpZW5zdGxlaXN0dW5nZW4gcnVuZCB1bSBkaWUgU29mdHdhcmVlbnR3aWNrbHVuZyBiaXMgaGluIHp1bSBEZXBsb3ltZW50IGbDvHIgZGVuIEVuZGt1bmRlbiBhbiB1bmQgYXV0b21hdGlzaWVyZW4gc29taXQgaW4gYWxsZW4gQmVyZWljaGVuLjwvcD4KICAgICAgICAgIDxhIGhyZWY9Ii9kZS9kZXZlbG9wbWVudC1lc3NlbnRpYWxzLyIgY2xhc3M9InNmbC1idXR0b24tYmx1ZSI+PHNwYW4+TWVociBlcmZhaHJlbjwvc3Bhbj48L2E+CiAgICAgICAgPC9kaXY+CiAgICAgIDwvZGl2PgogICAgPC9kaXY+CiAgPC9kaXY+CjwvZGl2Pgo=",
+			"Coverages":[{"startLine": 8, "startColumn": 5, "endLine": 19, "endColumn": 11}]
+		},
+		"compare.c": {
+			"Data": "aW50IGNvbXBhcmUoaW50IGEsIGludCBiKSB7CglpbnQgYyA9IGEgLSBiOwoKCWlmIChjIDwgMCkgewoJCXJldHVybiAtMTsKCX0gZWxzZSBpZiAoYyA",
+			"Coverages":[{"startLine": 1, "startColumn": 1, "endLine": 6, "endColumn": 14}]
+		},
+		"bluemonday.go": {
+			"Data": "ZnVuYyBtYWluKCkgewoJLy8gRGVmaW5lIGEgcG9saWN5LCB3ZSBhcmUgdXNpbmcgdGhlIFVHQyBwb2xpY3kgYXMgYSBiYXNlLgoJcCA6PSBibHVlbW9uZGF5LlVHQ1BvbGljeSgpCgoJLy8gSFRNTCBlbWFpbCBpcyBvZnRlbiBkaXNwbGF5ZWQgaW4gaWZyYW1lcyBhbmQgbmVlZHMgdG8gcHJlc2VydmUgY29yZQoJLy8gc3RydWN0dXJlCglwLkFsbG93RWxlbWVudHMoImh0bWwiLCAiaGVhZCIsICJib2R5IiwgInRpdGxlIikKCgkvLyBUaGVyZSBhcmUgbm90IHNhZmUsIGFuZCBpcyBvbmx5IGJlaW5nIGRvbmUgaGVyZSB0byBkZW1vbnN0cmF0ZSBob3cgdG8KCS8vIHByb2Nlc3MgSFRNTCBlbWFpbHMgd2hlcmUgc3R5bGluZyBoYXMgdG8gYmUgcHJlc2VydmVkLiBUaGlzIGlzIGF0IHRoZQoJLy8gZXhwZW5zZSBvZiBzZWN1cml0eS4KCXAuQWxsb3dBdHRycygidHlwZSIpLk1hdGNoaW5nKFN0eWxlVHlwZSkuT25FbGVtZW50cygic3R5bGUiKQoJcC5BbGxvd0F0dHJzKCJzdHlsZSIpLkdsb2JhbGx5KCkKCgkvLyBIVE1MIGVtYWlsIGZyZXF1ZW50bHkgY29udGFpbnMgb2JzZWxldGUgYW5kIGJhc2ljIEhUTUwKCXAuQWxsb3dFbGVtZW50cygiZm9udCIsICJtYWluIiwgIm5hdiIsICJoZWFkZXIiLCAiZm9vdGVyIiwgImtiZCIsICJsZWdlbmQiKQoKCS8vIE5lZWQgdG8gcGVybWl0IHRoZSBzdHlsZSB0YWcsIGFuZCBidXR0b25zIGFyZSBvZnRlbiBmb3VuZCBpbiBlbWFpbHMgKHdoeT8pCglwLkFsbG93QXR0cnMoInR5cGUiKS5NYXRjaGluZyhCdXR0b25UeXBlKS5PbkVsZW1lbnRzKCJidXR0b24iKQoKCS8vIEhUTUwgZW1haWwgdGVuZHMgdG8gc2VlIHRoZSB1c2Ugb2Ygb2JzZWxldGUgc3BhY2luZyBhbmQgc3R5bGluZyBhdHRyaWJ1dGVzCglwLkFsbG93QXR0cnMoImJnY29sb3IiLCAiY29sb3IiKS5NYXRjaGluZyhDb2xvcikuT25FbGVtZW50cygiYmFzZWZvbnQiLCAiZm9udCIsICJociIpCglwLkFsbG93QXR0cnMoImJvcmRlciIpLk1hdGNoaW5nKGJsdWVtb25kYXkuSW50ZWdlcikuT25FbGVtZW50cygiaW1nIiwgInRhYmxlIikKCXAuQWxsb3dBdHRycygiY2VsbHBhZGRpbmciLCAiY2VsbHNwYWNpbmciKS5NYXRjaGluZyhibHVlbW9uZGF5LkludGVnZXIpLk9uRWxlbWVudHMoInRhYmxlIikKCgkvLyBBbGxvdyAiY2xhc3MiIGF0dHJpYnV0ZXMgb24gYWxsIGVsZW1lbnRzCglwLkFsbG93U3R5bGluZygpCgoJLy8gQWxsb3cgaW1hZ2VzIHRvIGJlIGVtYmVkZGVkIHZpYSBkYXRhLXVyaQoJcC5BbGxvd0RhdGFVUklJbWFnZXMoKQoKCS8vIEFkZCAicmVsPW5vZm9sbG93IiB0byBsaW5rcwoJcC5SZXF1aXJlTm9Gb2xsb3dPbkxpbmtzKHRydWUpCglwLlJlcXVpcmVOb0ZvbGxvd09uRnVsbHlRdWFsaWZpZWRMaW5rcyh0cnVlKQoKCS8vIE9wZW4gZXh0ZXJuYWwgbGlua3MgaW4gYSBuZXcgd2luZG93L3RhYgoJcC5BZGRUYXJnZXRCbGFua1RvRnVsbHlRdWFsaWZpZWRMaW5rcyh0cnVlKQoKCS8vIFJlYWQgaW5wdXQgZnJvbSBzdGRpbiBzbyB0aGF0IHRoaXMgaXMgYSBuaWNlIHVuaXggdXRpbGl0eSBhbmQgY2FuIHJlY2VpdmUKCS8vIHBpcGVkIGlucHV0CglkaXJ0eSwgZXJyIDo9IGlvdXRpbC5SZWFkQWxsKG9zLlN0ZGluKQoJaWYgZXJyICE9IG5pbCB7CgkJbG9nLkZhdGFsKGVycikKCX0KCgkvLyBBcHBseSB0aGUgcG9saWN5IGFuZCB3cml0ZSB0byBzdGRvdXQKCWZtdC5GcHJpbnQoCgkJb3MuU3Rkb3V0LAoJCXAuU2FuaXRpemUoCgkJCXN0cmluZyhkaXJ0eSksCgkJKSwKCSkKfQo",
+			"Coverages":[{"startLine": 5, "startColumn": 2, "endLine": 13, "endColumn": 34}, {"startLine": 18, "startColumn": 2, "endLine": 19, "endColumn": 64}]
+		},
+		"compare.go": {
+			"Data": "cGFja2FnZSBmaWxlcwoKZnVuYyBjb21wYXJlKGEgaW50LCBiIGludCkgaW50IHsKCWMgOj0gYSAtIGIKCglpZiBjIDwgMCB7CgkJcmV0dXJuIC0xCgl9IGVsc2UgaWYgYyA",
+			"Coverages":[{"startLine": 3, "startColumn": 1, "endLine": 8, "endColumn": 13}]
+		},
+		"compare.java": {
+			"Data": "Y2xhc3MgY29tcGFyZSB7CglzdGF0aWMgaW50IGNvbXBhcmUoaW50IGEsIGludCBiKSB7CgkJaW50IGMgPSBhIC0gYjsKCgkJaWYgKGMgPCAwKSB7CgkJCXJldHVybiAtMTsKCQl9IGVsc2UgaWYgKGMgPiAwKSB7CgkJCXJldHVybiAxOwoJCX0gZWxzZSB7CgkJCXJldHVybiAwOwoJCX0KCX0KfQo=",
+			"Coverages":[{"startLine": 1, "startColumn": 1, "endLine": 13, "endColumn": 2}]
+		}
+	}
+}
+
+

@@ -1,0 +1,140 @@
+<div class="container">
+	<div class="row mt-5">
+		<div class="col">
+			<h3>
+				File comments
+			</h3>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col">
+			<strong>
+				file.service.ts
+			</strong>
+			<br />
+			<ul>
+				<li>
+					Could not load files from server due to CORS (have a theory why it doesn't work, will tell in person)
+				</li>
+				<li>
+					UTF-8 for decoding is a potential issue (solved)
+				</li>
+				<li>
+					Classes potentially unnecessary (included just for demonstration)
+				</li>
+			</ul>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col">
+			<strong>
+				lang-detection.service.ts
+			</strong>
+			<br />
+			<ul>
+				<li>
+					Lang of code needs to be detected in order to be able to show right syntax
+				</li>
+				<li>
+					Maybe possible with passing file to editor via Uri
+				</li>
+				<li>
+					If not either create lookup object (went for that)
+				</li>
+				<li>
+					Or implement <a href="https://github.com/blakeembrey/node-language-detect" target="new">node-language-detect</a> (checks code if extension doesn't work), but hard to implement in Angular
+				</li>
+				<li>
+					Lost a lot of time trying to implement this lib
+				</li>
+				<li>
+					Took its file-extension-to-lang lookup table, but there's a possible bug in it (.ts -> XML != .ts -> Typescript)
+				</li>
+			</ul>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col">
+			<strong>
+				exercise.component.ts
+			</strong>
+			<br />
+			<ul>
+				<li>
+					Testing! Should start with tests before writing anything else!
+				</li>
+				<li>
+					Documentation required? Would use something like <a href="https://compodoc.app/" target="new">Compodoc</a>.
+				</li>
+				<li>
+					GET calls not possible due to CORS problem (faked them)
+				</li>
+				<li>
+					Error notification service should be implemented
+				</li>
+				<li>
+					Sorting order: There should be a button or so to execute it
+				</li>
+			</ul>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col">
+			<strong>
+				Foldertree
+			</strong>
+			<br />
+			<ul>
+				<li>
+					Transforming array of folders was not trivial at all & time consuming
+				</li>
+				<li>
+					Click should open/close folder
+				</li>
+				<li>
+					Clicking would also solve highlight problem (name of file visible in editor is not highlighted any more if user clicks somewhere else)
+				</li>
+				<li>
+					Sorting should rather be a generic service I guess that could be used universally
+				</li>
+				<li>
+					Functionality could be expanded (keys control for instance)
+				</li>
+			</ul>
+		</div>
+	</div>
+	<div class="row mb-5">
+		<div class="col">
+			<strong>
+				Monaco Editor
+			</strong>
+			<br />
+			<ul>
+				<li>
+					Why can coverages overlap?
+				</li>
+				<li>
+					Why could C1 be greater than C2 if they are on the same line?
+				</li>
+				<li>
+					Highlight of coverage: color mustn't collide with syntax highlighting
+				</li>
+				<li>
+					Not sure if angular wrapper is the right choice here - seems to have some strange restrictions, especially when re-initialising component
+				</li>
+				<li>
+					Strange 1: Editor options are @Input setters = whole object needs to be updated in order to see changes in DOM. Not too bad but a bit weird.
+				</li>
+				<li>
+					Strange 2: Some options like ranges can just be passed into editor object after init, but changes are sometimes not shown in DOM (some kind of racing condition?).
+				</li>
+				<li>
+					Would need way more time to really investigate this library (Strange DOM things, color options, best practices highlighting, automatic height etc)
+				</li>
+				<li>
+					Right now one could think that code is editable (bad UX), should be prevented
+				</li>
+			</ul>
+		</div>
+	</div>
+</div>

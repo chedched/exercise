@@ -1,0 +1,12 @@
+<div class="container">
+	<div class="row mt-5">
+		<div class="col-3">
+			<filetree [paths]="filePaths" [sort]="sortingOrder" (fileClicked)="onFileClicked($event)">
+			</filetree>
+		</div>
+		<div class="col-9">
+			<ngx-monaco-editor class="code-editor" [options]="editorOptions" [(ngModel)]="code" (onInit)="onInit($event)">
+			</ngx-monaco-editor>
+		</div>
+	</div>
+</div>
